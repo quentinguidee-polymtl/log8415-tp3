@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def destroy_instances():
+    logger.info("Terminating instances")
     instances = ec2_res.instances.filter(
         Filters=[{
             'Name': 'instance-state-name',
@@ -20,23 +21,33 @@ def destroy_instances():
 
 
 def destroy_keypair():
-    pairs = ec2_res.key_pairs.filter(
-        KeyNames=["keypair"],
-    )
-    for pair in pairs:
-        pair.delete()
+    try:
+        logger.info("Deleting key pair")
+        pairs = ec2_res.key_pairs.filter(
+            KeyNames=["keypair"],
+        )
+        for pair in pairs:
+            pair.delete()
+    except ClientError:
+        logger.error("Key pair not found")
 
 
 @backoff.on_exception(backoff.constant, ClientError)
 def destroy_security_group():
-    security_groups = ec2_res.security_groups.filter(
-        GroupNames=["security_group"],
-    )
-    for sg in security_groups:
-        sg.delete()
+    try:
+        logger.info("Deleting security group")
+        security_groups = ec2_res.security_groups.filter(
+            GroupNames=["security_group"],
+        )
+        for sg in security_groups:
+            sg.delete()
+    except ClientError:
+        logger.error("Security group not found")
 
 
 def main():
     destroy_instances()
     destroy_keypair()
     destroy_security_group()
+
+    logger.info("Environment destroyed")
