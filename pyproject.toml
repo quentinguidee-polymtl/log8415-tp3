@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "log8415-tp3"
+version = "0.1.0"
+description = "log8415-tp3 project"
+authors = ["Quentin Guidée <git@arra.red>"]
+license = "UNLICENSED"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+boto3 = "^1.33.7"
+
+[tool.poetry.group.dev.dependencies]
+boto3-stubs = "^1.33.7"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
