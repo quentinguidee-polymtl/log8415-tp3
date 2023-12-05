@@ -43,6 +43,13 @@ files = [
 
 [package.dependencies]
 botocore-stubs = "*"
+mypy-boto3-cloudformation = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
+mypy-boto3-dynamodb = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
+mypy-boto3-ec2 = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
+mypy-boto3-lambda = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
+mypy-boto3-rds = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
+mypy-boto3-s3 = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
+mypy-boto3-sqs = {version = ">=1.33.0,<1.34.0", optional = true, markers = "extra == \"essential\""}
 types-s3transfer = "*"
 typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
 
@@ -473,6 +480,154 @@ files = [
 ]
 
 [[package]]
+name = "markdown-it-py"
+version = "3.0.0"
+description = "Python port of markdown-it. Markdown parsing, done right!"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "markdown-it-py-3.0.0.tar.gz", hash = "sha256:e3f60a94fa066dc52ec76661e37c851cb232d92f9886b15cb560aaada2df8feb"},
+    {file = "markdown_it_py-3.0.0-py3-none-any.whl", hash = "sha256:355216845c60bd96232cd8d8c40e8f9765cc86f46880e43a8fd22dc1a1a8cab1"},
+]
+
+[package.dependencies]
+mdurl = ">=0.1,<1.0"
+
+[package.extras]
+benchmarking = ["psutil", "pytest", "pytest-benchmark"]
+code-style = ["pre-commit (>=3.0,<4.0)"]
+compare = ["commonmark (>=0.9,<1.0)", "markdown (>=3.4,<4.0)", "mistletoe (>=1.0,<2.0)", "mistune (>=2.0,<3.0)", "panflute (>=2.3,<3.0)"]
+linkify = ["linkify-it-py (>=1,<3)"]
+plugins = ["mdit-py-plugins"]
+profiling = ["gprof2dot"]
+rtd = ["jupyter_sphinx", "mdit-py-plugins", "myst-parser", "pyyaml", "sphinx", "sphinx-copybutton", "sphinx-design", "sphinx_book_theme"]
+testing = ["coverage", "pytest", "pytest-cov", "pytest-regressions"]
+
+[[package]]
+name = "mdurl"
+version = "0.1.2"
+description = "Markdown URL utilities"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mdurl-0.1.2-py3-none-any.whl", hash = "sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8"},
+    {file = "mdurl-0.1.2.tar.gz", hash = "sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba"},
+]
+
+[[package]]
+name = "mypy-boto3-cloudformation"
+version = "1.33.7"
+description = "Type annotations for boto3.CloudFormation 1.33.7 service generated with mypy-boto3-builder 7.21.0"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-cloudformation-1.33.7.tar.gz", hash = "sha256:5c299286e3d4bd0d3dad3f259ac532a0839bd72a2bd7f11a984291c4dd974bcb"},
+    {file = "mypy_boto3_cloudformation-1.33.7-py3-none-any.whl", hash = "sha256:9840294354fe4c977e5d74f9e32025f4ae0dde9b266a21277b506125fa8a618c"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "mypy-boto3-dynamodb"
+version = "1.33.0"
+description = "Type annotations for boto3.DynamoDB 1.33.0 service generated with mypy-boto3-builder 7.20.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-dynamodb-1.33.0.tar.gz", hash = "sha256:2cfe1089c89de61b1ec0e69a72ba3e6865a013ea0a37d318ab564983785d42f9"},
+    {file = "mypy_boto3_dynamodb-1.33.0-py3-none-any.whl", hash = "sha256:619ea2cc311ced0ecb44b6e8d3bf3dd851fb7c53a34128b4ff6d6e6a11fdd41f"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "mypy-boto3-ec2"
+version = "1.33.0"
+description = "Type annotations for boto3.EC2 1.33.0 service generated with mypy-boto3-builder 7.20.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-ec2-1.33.0.tar.gz", hash = "sha256:07578937f974f6129a79d88f788e53a0a38d22e5a9c0c63d589f24e39b8fb90d"},
+    {file = "mypy_boto3_ec2-1.33.0-py3-none-any.whl", hash = "sha256:ac24fe3a7d849735c84bf53abaa2ba809e39d2582e98bd5538adecb585fce9b0"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "mypy-boto3-lambda"
+version = "1.33.0"
+description = "Type annotations for boto3.Lambda 1.33.0 service generated with mypy-boto3-builder 7.20.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-lambda-1.33.0.tar.gz", hash = "sha256:beac0cb4b94f83a444242db16f601405bdfb6c15808c2c52720224d907e7af40"},
+    {file = "mypy_boto3_lambda-1.33.0-py3-none-any.whl", hash = "sha256:10e0f04168f4064e89ba136218162003f1cb6826dcbfa95ca982d3cb792fc9f7"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "mypy-boto3-rds"
+version = "1.33.0"
+description = "Type annotations for boto3.RDS 1.33.0 service generated with mypy-boto3-builder 7.20.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-rds-1.33.0.tar.gz", hash = "sha256:2a50e40aa473b34e6651672a4233873b5fafbe42218c33af27a8ecf8571e9169"},
+    {file = "mypy_boto3_rds-1.33.0-py3-none-any.whl", hash = "sha256:dda63ea8b2358e549a73001ad7b56c3b4ce3da90f00b520aa37e3ada99e4ab69"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "mypy-boto3-s3"
+version = "1.33.2"
+description = "Type annotations for boto3.S3 1.33.2 service generated with mypy-boto3-builder 7.20.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-s3-1.33.2.tar.gz", hash = "sha256:f54a3ad3288f4e4719ebada3dde68c320507b0fc451d59bc68af7e6ab15cbdad"},
+    {file = "mypy_boto3_s3-1.33.2-py3-none-any.whl", hash = "sha256:9d463df6def30de31a467d49ab92ff7795d46709d56eff6f52216a08bac27918"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "mypy-boto3-sqs"
+version = "1.33.0"
+description = "Type annotations for boto3.SQS 1.33.0 service generated with mypy-boto3-builder 7.20.3"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "mypy-boto3-sqs-1.33.0.tar.gz", hash = "sha256:81f4838e81cbb0c088a10e287922fdf6a3f317cbab6647993ab9dbd567c0e8fb"},
+    {file = "mypy_boto3_sqs-1.33.0-py3-none-any.whl", hash = "sha256:81f71d5f461e5e670d2ca93df92c93efdd7c29be33eabf8475df5f071e638583"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.12\""}
+
+[[package]]
+name = "pygments"
+version = "2.17.2"
+description = "Pygments is a syntax highlighting package written in Python."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pygments-2.17.2-py3-none-any.whl", hash = "sha256:b27c2826c47d0f3219f29554824c30c5e8945175d888647acd804ddd04af846c"},
+    {file = "pygments-2.17.2.tar.gz", hash = "sha256:da46cec9fd2de5be3a8a784f434e4c4ab670b4ff54d605c4c2717e9d49c4c367"},
+]
+
+[package.extras]
+plugins = ["importlib-metadata"]
+windows-terminal = ["colorama (>=0.4.6)"]
+
+[[package]]
 name = "python-dateutil"
 version = "2.8.2"
 description = "Extensions to the standard Python datetime module"
@@ -485,6 +640,24 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "rich"
+version = "13.7.0"
+description = "Render rich text, tables, progress bars, syntax highlighting, markdown and more to the terminal"
+optional = false
+python-versions = ">=3.7.0"
+files = [
+    {file = "rich-13.7.0-py3-none-any.whl", hash = "sha256:6da14c108c4866ee9520bbffa71f6fe3962e193b7da68720583850cd4548e235"},
+    {file = "rich-13.7.0.tar.gz", hash = "sha256:5cb5123b5cf9ee70584244246816e9114227e0b98ad9176eede6ad54bf5403fa"},
+]
+
+[package.dependencies]
+markdown-it-py = ">=2.2.0"
+pygments = ">=2.13.0,<3.0.0"
+
+[package.extras]
+jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "s3transfer"
@@ -567,4 +740,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "5cc7f1c2a56861343b6647b740cd34ee168665e9b17b2256587203d5b527a1e7"
+content-hash = "bd81c06f91d6ec2321cc275a2709c23fa21a612ddbf711ffee3d4c102e88467e"

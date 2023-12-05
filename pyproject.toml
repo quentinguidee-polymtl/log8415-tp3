@@ -6,17 +6,18 @@ authors = ["Quentin Guidée <git@arra.red>"]
 license = "UNLICENSED"
 readme = "README.md"
 packages = [
-    { include = "deploy" },
-    { include = "destroy" },
+    { include = "deploy", from = "." },
+    { include = "destroy", from = "." },
 ]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 boto3 = "^1.33.7"
 backoff = "^2.2.1"
+rich = "^13.7.0"
 
 [tool.poetry.group.dev.dependencies]
-boto3-stubs = "^1.33.7"
+boto3-stubs = { extras = ["essential"], version = "^1.33.7" }
 
 [build-system]
 requires = ["poetry-core"]
