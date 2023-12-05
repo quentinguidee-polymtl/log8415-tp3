@@ -4,6 +4,8 @@ import logging
 import boto3
 from typing import TYPE_CHECKING
 
+from deploy.instances import setup_mysql_single
+
 if TYPE_CHECKING:
     from mypy_boto3_ec2.service_resource import KeyPair, Vpc, SecurityGroup, Instance
 
@@ -27,7 +29,11 @@ async def setup():
     tasks = [asyncio.to_thread(wait_instance, inst) for inst in instances]
     await asyncio.gather(*tasks)
 
-    logger.info("Instances are ready")
+    logger.info("All instances are ready")
+    logger.info("Installing MySQL")
+
+    tasks = [asyncio.to_thread(setup_mysql_single, inst) for inst in instances]
+    await asyncio.gather(*tasks)
 
     return instances
 

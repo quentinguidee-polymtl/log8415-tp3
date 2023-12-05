@@ -28,7 +28,10 @@ def destroy_keypair():
         )
         for pair in pairs:
             pair.delete()
-    except ClientError:
+            logger.info("Key pair deleted")
+    except ClientError as e:
+        if e.response['Error']['Code'] != 'InvalidKeyPair.NotFound':
+            raise
         logger.error("Key pair not found")
 
 
@@ -41,8 +44,11 @@ def destroy_security_group():
         )
         for sg in security_groups:
             sg.delete()
-    except ClientError:
-        logger.error("Security group not found")
+            logger.info("Security group deleted")
+    except ClientError as e:
+        if e.response['Error']['Code'] != 'InvalidGroup.NotFound':
+            raise
+        logger.info("Security group not found")
 
 
 def main():
