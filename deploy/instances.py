@@ -20,14 +20,25 @@ def setup_mysql_single(inst: Instance):
             pkey=RSAKey.from_private_key_file('keypair.pem')
         )
         ssh_exec(ssh_cli, r"""
-            sudo apt update
-            sudo apt install -y mysql-server
+            sudo apt-get update
+            sudo apt-get install -y mysql-server
+            sudo apt-get install -y unzip
+            """)
+
+        ssh_exec(ssh_cli, r"""
             sudo sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
             sudo systemctl restart mysql.service
+            """)
+
+        ssh_exec(ssh_cli, r"""
+            wget https://downloads.mysql.com/docs/sakila-db.zip
+            unzip sakila-db.zip
             sudo mysql -e "CREATE USER 'ubuntu'@'%' IDENTIFIED BY 'ubuntu';"
             sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'ubuntu'@'%' WITH GRANT OPTION;"
             sudo mysql -e "FLUSH PRIVILEGES;"
-        """)
+            sudo mysql -e "SOURCE sakila-db/sakila-schema.sql;"
+            sudo mysql -e "SOURCE sakila-db/sakila-data.sql;"
+            """)
 
 
 def ssh_exec(cli: SSHClient, cmd: str):
