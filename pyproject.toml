@@ -5,6 +5,9 @@ description = "log8415-tp3 project"
 authors = ["Quentin Guidée <git@arra.red>"]
 license = "UNLICENSED"
 readme = "README.md"
+packages = [
+    { include = "deploy" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
