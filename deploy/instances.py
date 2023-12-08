@@ -25,10 +25,14 @@ def setup_mysql_single(inst: Instance):
             sudo apt-get install -y unzip
             """)
 
+        wait_mysql(ssh_cli)
+
         ssh_exec(ssh_cli, r"""
             sudo sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
             sudo systemctl restart mysql.service
             """)
+
+        wait_mysql(ssh_cli)
 
         ssh_exec(ssh_cli, r"""
             wget https://downloads.mysql.com/docs/sakila-db.zip
@@ -49,3 +53,12 @@ def ssh_exec(cli: SSHClient, cmd: str):
         err = stderr.read().decode().strip()
         logger.error(f"SSH >> {err}")
         raise RuntimeError(err)
+
+
+def wait_mysql(cli: SSHClient):
+    ssh_exec(cli, r"""
+        while ! sudo mysql -e "SHOW DATABASES;"; do
+            echo "MySQL is not ready yet. Waiting 1 second..."
+            sleep 1
+        done
+        """)
