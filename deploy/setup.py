@@ -4,7 +4,8 @@ import logging
 import boto3
 from typing import TYPE_CHECKING
 
-from deploy.instances import setup_mysql_single
+from deploy.instances import setup_mysql_single, setup_mysql_cluster_manager, setup_mysql_cluster_worker, \
+    post_setup_mysql_cluster
 
 if TYPE_CHECKING:
     from mypy_boto3_ec2.service_resource import KeyPair, Vpc, SecurityGroup, Instance
@@ -21,8 +22,13 @@ async def setup():
     security_group = create_security_group(vpc)
     availability_zone = get_availability_zones()[0]
 
-    instances: list['Instance'] = []
-    instances += create_instance("MySQL", security_group, key_pair, availability_zone)
+    instances: list['Instance'] = [
+        create_instance("mysql-standalone", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-manager", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-worker-1", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-worker-2", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-worker-3", security_group, key_pair, availability_zone),
+    ]
 
     logger.info("Waiting for instances to be running")
 
@@ -32,8 +38,20 @@ async def setup():
     logger.info("All instances are ready")
     logger.info("Installing MySQL")
 
-    tasks = [asyncio.to_thread(setup_mysql_single, inst) for inst in instances]
+    # Setup Single MySQL + Setup Cluster Manager simultaneously
+    tasks = [
+        asyncio.to_thread(setup_mysql_single, instances[0]),
+        asyncio.to_thread(setup_mysql_cluster_manager, instances[1], instances[2:]),
+    ]
     await asyncio.gather(*tasks)
+
+    # Setup Cluster Workers
+    tasks = [
+        asyncio.to_thread(setup_mysql_cluster_worker, instances[1], inst, instances[2:]) for inst in instances[2:]
+    ]
+    await asyncio.gather(*tasks)
+
+    post_setup_mysql_cluster(instances[1])
 
     return instances
 
@@ -62,26 +80,31 @@ def create_security_group(vpc: 'Vpc') -> 'SecurityGroup':
         Description='security_group',
         VpcId=vpc.id
     )
-    group.authorize_ingress(
-        IpPermissions=[
-            {
-                "FromPort": 22,
-                "ToPort": 22,
-                "IpProtocol": "tcp",
-                "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-            },
-            {
-                "FromPort": 3306,
-                "ToPort": 3306,
-                "IpProtocol": "tcp",
-                "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-            },
-        ]
-    )
+    group.authorize_ingress(IpPermissions=[
+        {
+            "FromPort": 22,
+            "ToPort": 22,
+            "IpProtocol": "tcp",
+            "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+        },
+        {
+            "FromPort": 1186,
+            "ToPort": 1186,
+            "IpProtocol": "tcp",
+            "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+        },
+        {
+            "FromPort": 3306,
+            "ToPort": 3306,
+            "IpProtocol": "tcp",
+            "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+        },
+    ])
     return group
 
 
-def create_instance(name: str, security_group: 'SecurityGroup', key_pair: 'KeyPair', availability_zone: str):
+def create_instance(name: str, security_group: 'SecurityGroup', key_pair: 'KeyPair',
+                    availability_zone: str) -> 'Instance':
     logger.info(f"Creating instance {name}")
     return ec2_res.create_instances(
         KeyName=key_pair.key_name,
@@ -108,7 +131,7 @@ def create_instance(name: str, security_group: 'SecurityGroup', key_pair: 'KeyPa
                 'Value': name,
             }]
         }]
-    )
+    )[0]
 
 
 def wait_instance(inst: 'Instance'):
