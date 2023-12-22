@@ -94,7 +94,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             """)
 
         ssh_exec(ssh_cli, r"""
-            sudo ndb_mgmd -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1
+            sudo ndb_mgmd -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1 --initial
             """)
 
         ssh_exec(ssh_cli, rf"""
