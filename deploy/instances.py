@@ -71,8 +71,8 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             datadir=/usr/local/mysql/data
             
             [ndb_mgmd]
-            NodeId=1
-            hostname=0.0.0.0
+            NodeId=50
+            hostname={manager.private_ip_address}
             datadir=/var/lib/mysql-cluster
             
             [ndbd]
@@ -88,16 +88,16 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             hostname={workers[2].private_ip_address}
 
             [mysqld]
-            NodeId=50
             hostname={manager.private_ip_address}
             EOF
             """)
 
         ssh_exec(ssh_cli, r"""
-            sudo ndb_mgmd -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1 --initial
+            sudo ndb_mgmd --reload -f /var/lib/mysql-cluster/config.ini --initial --ndb-nodeid=50
             """)
 
         ssh_exec(ssh_cli, rf"""
+            sudo ufw allow from {manager.private_ip_address}
             sudo ufw allow from {workers[0].private_ip_address}
             sudo ufw allow from {workers[1].private_ip_address}
             sudo ufw allow from {workers[2].private_ip_address}
@@ -119,6 +119,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             [mysqld]
             ndbcluster
             bind-address=0.0.0.0
+            ndb-connectstring={manager.private_ip_address}
 
             [mysql_cluster]
             ndb-connectstring={manager.private_ip_address}
