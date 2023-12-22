@@ -8,6 +8,7 @@ readme = "README.md"
 packages = [
     { include = "deploy", from = "." },
     { include = "destroy", from = "." },
+    { include = "benchmarks", from = "." },
 ]
 
 [tool.poetry.dependencies]
