@@ -101,10 +101,6 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             sudo ufw allow from {workers[2].private_ip_address}
             """)
 
-        ssh_exec(ssh_cli, r"""
-            sudo ndb_mgmd --skip-config-cache -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1 &
-            """)
-
         # Install the server/client
 
         ssh_exec(ssh_cli, rf"""
@@ -130,6 +126,10 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             touch /var/run/mysqld/mysqld.pid
             chown -R mysql:mysql /var/run/mysqld
             sudo systemctl restart mysql.service
+            """)
+
+        ssh_exec(ssh_cli, r"""
+            sudo ndb_mgmd -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1
             """)
 
 
