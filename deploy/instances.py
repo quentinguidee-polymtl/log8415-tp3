@@ -164,7 +164,7 @@ def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: l
             """)
 
         ssh_exec(ssh_cli, r"""
-            sudo ndbd &
+            sudo ndbd
             """)
 
 
