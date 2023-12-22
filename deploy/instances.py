@@ -76,28 +76,29 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             
             [ndbd]
             NodeId=2
-            hostname={workers[0].public_ip_address}
+            hostname={workers[0].private_ip_address}
             datadir=/usr/local/mysql/data
             
             [ndbd]
             NodeId=3
-            hostname={workers[1].public_ip_address}
+            hostname={workers[1].private_ip_address}
             datadir=/usr/local/mysql/data
             
             [ndbd]
             NodeId=4
-            hostname={workers[2].public_ip_address}
+            hostname={workers[2].private_ip_address}
             datadir=/usr/local/mysql/data
             
             [mysqld]
-            hostname={manager.public_ip_address}
+            NodeId=50
+            hostname={manager.private_ip_address}
             EOF
             """)
 
         ssh_exec(ssh_cli, rf"""
-            sudo ufw allow from {workers[0].public_ip_address}
-            sudo ufw allow from {workers[1].public_ip_address}
-            sudo ufw allow from {workers[2].public_ip_address}
+            sudo ufw allow from {workers[0].private_ip_address}
+            sudo ufw allow from {workers[1].private_ip_address}
+            sudo ufw allow from {workers[2].private_ip_address}
             """)
 
         ssh_exec(ssh_cli, r"""
@@ -123,7 +124,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             pid-file     = /var/run/mysqld/mysqld.pid
 
             [mysql_cluster]
-            ndb-connectstring={manager.public_ip_address}
+            ndb-connectstring={manager.private_ip_address}
             EOF
             mkdir -p /var/run/mysqld
             touch /var/run/mysqld/mysqld.pid
@@ -150,16 +151,16 @@ def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: l
             sudo dpkg -i mysql-cluster-community-data-node_7.6.6-1ubuntu18.04_amd64.deb
             sudo tee -a /etc/my.cnf <<EOF
             [mysql_cluster]
-            ndb-connectstring={manager.public_ip_address}
+            ndb-connectstring={manager.private_ip_address}
             EOF
             sudo mkdir -p /usr/local/mysql/data
             """)
 
         ssh_exec(ssh_cli, rf"""
-            sudo ufw allow from {manager.public_ip_address}
-            sudo ufw allow from {workers[0].public_ip_address}
-            sudo ufw allow from {workers[1].public_ip_address}
-            sudo ufw allow from {workers[2].public_ip_address}
+            sudo ufw allow from {manager.private_ip_address}
+            sudo ufw allow from {workers[0].private_ip_address}
+            sudo ufw allow from {workers[1].private_ip_address}
+            sudo ufw allow from {workers[2].private_ip_address}
             """)
 
         ssh_exec(ssh_cli, r"""
