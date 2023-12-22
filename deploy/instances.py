@@ -68,6 +68,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             sudo tee /var/lib/mysql-cluster/config.ini <<EOF
             [ndbd default]
             NoOfReplicas=3
+            datadir=/usr/local/mysql/data
             
             [ndb_mgmd]
             NodeId=1
@@ -77,22 +78,23 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             [ndbd]
             NodeId=2
             hostname={workers[0].private_ip_address}
-            datadir=/usr/local/mysql/data
             
             [ndbd]
             NodeId=3
             hostname={workers[1].private_ip_address}
-            datadir=/usr/local/mysql/data
             
             [ndbd]
             NodeId=4
             hostname={workers[2].private_ip_address}
-            datadir=/usr/local/mysql/data
-            
+
             [mysqld]
             NodeId=50
             hostname={manager.private_ip_address}
             EOF
+            """)
+
+        ssh_exec(ssh_cli, r"""
+            sudo ndb_mgmd -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1
             """)
 
         ssh_exec(ssh_cli, rf"""
@@ -116,20 +118,12 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             sudo tee -a /etc/mysql/my.cnf <<EOF
             [mysqld]
             ndbcluster
-            bind-address = 0.0.0.0
-            pid-file     = /var/run/mysqld/mysqld.pid
+            bind-address=0.0.0.0
 
             [mysql_cluster]
             ndb-connectstring={manager.private_ip_address}
             EOF
-            mkdir -p /var/run/mysqld
-            touch /var/run/mysqld/mysqld.pid
-            chown -R mysql:mysql /var/run/mysqld
             sudo systemctl restart mysql.service
-            """)
-
-        ssh_exec(ssh_cli, r"""
-            sudo ndb_mgmd -f /var/lib/mysql-cluster/config.ini --ndb-nodeid=1
             """)
 
 
