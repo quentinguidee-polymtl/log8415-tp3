@@ -82,23 +82,11 @@ def create_security_group(vpc: 'Vpc') -> 'SecurityGroup':
     )
     group.authorize_ingress(IpPermissions=[
         {
-            "FromPort": 22,
-            "ToPort": 22,
-            "IpProtocol": "tcp",
+            "FromPort": 0,
+            "ToPort": 0,
+            "IpProtocol": "-1",
             "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-        },
-        {
-            "FromPort": 1186,
-            "ToPort": 1186,
-            "IpProtocol": "tcp",
-            "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-        },
-        {
-            "FromPort": 3306,
-            "ToPort": 3306,
-            "IpProtocol": "tcp",
-            "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
-        },
+        }
     ])
     return group
 
