@@ -1,8 +1,9 @@
 import os
 import random
 
-from flask import Flask
+from flask import Flask, request
 from ping3 import ping
+from mysql.connector import connect, MySQLConnection
 
 app = Flask(__name__)
 
@@ -19,7 +20,7 @@ def handle_direct():
     """
     Directly send the request to the master node
     """
-    return send(MASTER_HOST)
+    return send(MASTER_HOST, request.data.decode())
 
 
 @app.route("/random")
@@ -27,7 +28,7 @@ def handle_random():
     """
     Send the request to a random slave node
     """
-    return send(random.choice(SLAVE_HOSTS))
+    return send(random.choice(SLAVE_HOSTS), request.data.decode())
 
 
 @app.route("/custom")
@@ -39,14 +40,31 @@ def handle_custom():
     for slave in SLAVE_HOSTS:
         pings.append(ping(slave))
 
-    return send(SLAVE_HOSTS[pings.index(min(pings))])
+    return send(SLAVE_HOSTS[pings.index(min(pings))], request.data.decode())
 
 
-def send(host: str):
+def send(host: str, sql: str):
     """
-    Send the request to the given host
+    Send the request to the given host and return the response
     """
-    pass
+    db = database(host)
+    cursor = db.cursor()
+    cursor.execute(sql)
+    res = cursor.fetchall()
+    db.commit()
+    db.close()
+    return res
+
+
+def database(host: str) -> MySQLConnection:
+    """
+    Connect to the database on the given host
+    """
+    return connect(
+        host=host,
+        user="ubuntu",
+        password="ubuntu",
+    )
 
 
 if __name__ == "__main__":
