@@ -6,9 +6,11 @@
 |------------------------|--------------|
 | mysql-standalone       | t2.micro     |
 | mysql-cluster-manager  | t2.micro     |
-| mysql-cluster-worker-a | t2.micro     |
-| mysql-cluster-worker-b | t2.micro     |
-| mysql-cluster-worker-c | t2.micro     |
+| mysql-cluster-worker-1 | t2.micro     |
+| mysql-cluster-worker-2 | t2.micro     |
+| mysql-cluster-worker-3 | t2.micro     |
+| proxy                  | t2.large     |
+| gatekeeper             | t2.large     |
 
 ## Author
 
