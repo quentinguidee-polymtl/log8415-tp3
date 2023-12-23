@@ -36,10 +36,7 @@ def handle_custom():
     """
     Send the request to the slave with the least load
     """
-    pings = []
-    for slave in SLAVE_HOSTS:
-        pings.append(ping(slave))
-
+    pings = [ping(host) for host in SLAVE_HOSTS]
     return send(SLAVE_HOSTS[pings.index(min(pings))], request.data.decode())
 
 
