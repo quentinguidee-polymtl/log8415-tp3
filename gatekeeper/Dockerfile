@@ -2,6 +2,9 @@ FROM python:3.11-slim
 
 ENV POETRY_VIRTUALENVS_IN_PROJECT=1
 
+ARG PROXY_HOST
+ENV PROXY_HOST=$PROXY_HOST
+
 WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./

@@ -7,7 +7,7 @@ from mysql.connector import connect, MySQLConnection
 
 app = Flask(__name__)
 
-MASTER_HOST = os.environ.get("MASTER_HOST")
+MANAGER_HOST = os.environ.get("MANAGER_HOST")
 SLAVE_HOSTS = [
     os.environ.get("SLAVE_1_HOST"),
     os.environ.get("SLAVE_2_HOST"),
@@ -20,7 +20,7 @@ def handle_direct():
     """
     Directly send the request to the master node
     """
-    return send(MASTER_HOST, request.data.decode())
+    return send(MANAGER_HOST, request.data.decode())
 
 
 @app.route("/random")

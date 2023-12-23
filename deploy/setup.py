@@ -5,7 +5,7 @@ import boto3
 from typing import TYPE_CHECKING
 
 from deploy.instances import setup_mysql_single, setup_mysql_cluster_manager, setup_mysql_cluster_worker, \
-    post_setup_mysql_cluster
+    post_setup_mysql_cluster, setup_gatekeeper, setup_proxy
 
 if TYPE_CHECKING:
     from mypy_boto3_ec2.service_resource import KeyPair, Vpc, SecurityGroup, Instance
@@ -23,11 +23,13 @@ async def setup():
     availability_zone = get_availability_zones()[0]
 
     instances: list['Instance'] = [
-        create_instance("mysql-standalone", security_group, key_pair, availability_zone),
-        create_instance("mysql-cluster-manager", security_group, key_pair, availability_zone),
-        create_instance("mysql-cluster-worker-1", security_group, key_pair, availability_zone),
-        create_instance("mysql-cluster-worker-2", security_group, key_pair, availability_zone),
-        create_instance("mysql-cluster-worker-3", security_group, key_pair, availability_zone),
+        create_instance("mysql-standalone", "t2.micro", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-manager", "t2.micro", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-worker-1", "t2.micro", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-worker-2", "t2.micro", security_group, key_pair, availability_zone),
+        create_instance("mysql-cluster-worker-3", "t2.micro", security_group, key_pair, availability_zone),
+        create_instance("proxy", "t2.large", security_group, key_pair, availability_zone),
+        create_instance("gatekeeper", "t2.large", security_group, key_pair, availability_zone),
     ]
 
     logger.info("Waiting for instances to be running")
@@ -41,13 +43,15 @@ async def setup():
     # Setup Single MySQL + Setup Cluster Manager simultaneously
     tasks = [
         asyncio.to_thread(setup_mysql_single, instances[0]),
-        asyncio.to_thread(setup_mysql_cluster_manager, instances[1], instances[2:]),
+        asyncio.to_thread(setup_mysql_cluster_manager, instances[1], instances[2:5]),
+        asyncio.to_thread(setup_proxy, instances[5], instances[1], instances[2:5]),
+        asyncio.to_thread(setup_gatekeeper, instances[6], instances[5])
     ]
     await asyncio.gather(*tasks)
 
     # Setup Cluster Workers
     tasks = [
-        asyncio.to_thread(setup_mysql_cluster_worker, instances[1], inst, instances[2:]) for inst in instances[2:]
+        asyncio.to_thread(setup_mysql_cluster_worker, instances[1], inst, instances[2:5]) for inst in instances[2:5]
     ]
     await asyncio.gather(*tasks)
 
@@ -91,13 +95,13 @@ def create_security_group(vpc: 'Vpc') -> 'SecurityGroup':
     return group
 
 
-def create_instance(name: str, security_group: 'SecurityGroup', key_pair: 'KeyPair',
+def create_instance(name: str, instance_type, security_group: 'SecurityGroup', key_pair: 'KeyPair',
                     availability_zone: str) -> 'Instance':
     logger.info(f"Creating instance {name}")
     return ec2_res.create_instances(
         KeyName=key_pair.key_name,
         SecurityGroupIds=[security_group.id],
-        InstanceType='t2.micro',
+        InstanceType=instance_type,
         ImageId='ami-053b0d53c279acc90',
         Placement={'AvailabilityZone': availability_zone},
         MinCount=1,

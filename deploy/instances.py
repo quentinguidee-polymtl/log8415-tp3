@@ -1,4 +1,6 @@
+import io
 import logging
+import tarfile
 from textwrap import dedent
 
 import backoff
@@ -8,6 +10,10 @@ from paramiko.rsakey import RSAKey
 from paramiko.ssh_exception import NoValidConnectionsError
 
 logger = logging.getLogger(__name__)
+
+
+class SSHExecError(RuntimeError):
+    pass
 
 
 # Commands from DigitalOcean documentation:
@@ -177,6 +183,67 @@ def post_setup_mysql_cluster(manager: Instance):
             """)
 
 
+@backoff.on_exception(backoff.constant, (NoValidConnectionsError, TimeoutError, SSHExecError))
+def setup_proxy(inst: Instance, manager: Instance, workers: list[Instance]):
+    with SSHClient() as ssh_cli:
+        ssh_connect(ssh_cli, inst.public_ip_address)
+
+        ssh_exec(ssh_cli, r"""
+            sudo snap install docker
+            """)
+
+        with ssh_cli.open_sftp() as sftp:
+            with io.BytesIO() as f:
+                with tarfile.open(fileobj=f, mode='w:gz') as tar:
+                    tar.add("pyproject.toml")
+                    tar.add("poetry.lock")
+                    tar.add("proxy/")
+                f.seek(0)
+                sftp.putfo(f, "proxy.tar.gz")
+
+        ssh_exec(ssh_cli, rf"""
+            rm -rf app && mkdir -p app
+            tar xzf proxy.tar.gz -C app/
+            cd app
+            sudo docker build -t proxy \
+                 --build-arg MANAGER_HOST={manager.private_ip_address} \
+                 --build-arg SLAVE_1_HOST={workers[0].private_ip_address} \
+                 --build-arg SLAVE_2_HOST={workers[1].private_ip_address} \
+                 --build-arg SLAVE_3_HOST={workers[2].private_ip_address} \
+                 -f proxy/Dockerfile .
+             sudo docker run -d -p 80:8080 proxy
+            """)
+
+
+@backoff.on_exception(backoff.constant, (NoValidConnectionsError, TimeoutError, SSHExecError))
+def setup_gatekeeper(inst: Instance, proxy: Instance):
+    with SSHClient() as ssh_cli:
+        ssh_connect(ssh_cli, inst.public_ip_address)
+
+        ssh_exec(ssh_cli, r"""
+            sudo snap install docker
+            """)
+
+        with ssh_cli.open_sftp() as sftp:
+            with io.BytesIO() as f:
+                with tarfile.open(fileobj=f, mode='w:gz') as tar:
+                    tar.add("pyproject.toml")
+                    tar.add("poetry.lock")
+                    tar.add("gatekeeper/")
+                f.seek(0)
+                sftp.putfo(f, "gatekeeper.tar.gz")
+
+        ssh_exec(ssh_cli, rf"""
+            rm -rf app && mkdir -p app
+            tar xzf gatekeeper.tar.gz -C app/
+            cd app
+            sudo docker build -t gatekeeper \
+                --build-arg PROXY_HOST={proxy.private_ip_address} \
+                -f gatekeeper/Dockerfile .
+            sudo docker run -d -p 80:8080 gatekeeper
+            """)
+
+
 def ssh_connect(cli: SSHClient, ip: str):
     cli.set_missing_host_key_policy(AutoAddPolicy())
     cli.connect(
@@ -195,7 +262,7 @@ def ssh_exec(cli: SSHClient, cmd: str):
         logger.error(f"SSH error >> {stdout.read().decode().strip()}")
         err = stderr.read().decode().strip()
         logger.error(f"SSH error >> {err}")
-        raise RuntimeError(err)
+        raise SSHExecError(err)
 
 
 def wait_mysql(cli: SSHClient):
