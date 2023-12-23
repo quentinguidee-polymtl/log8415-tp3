@@ -20,9 +20,11 @@ backoff = "^2.2.1"
 rich = "^13.7.0"
 paramiko = "^3.3.1"
 requests = "^2.31.0"
+ping3 = "^4.0.4"
 
 [tool.poetry.group.proxy.dependencies]
 flask = "^2.3.3"
+ping3 = "^4.0.4"
 
 [tool.poetry.group.gatekeeper.dependencies]
 flask = "^2.3.3"
