@@ -4,6 +4,7 @@ import logging
 import boto3
 from typing import TYPE_CHECKING
 
+from deploy.bench import run_benchmarks_standalone, run_benchmarks_cluster
 from deploy.instances import setup_mysql_single, setup_mysql_cluster_manager, setup_mysql_cluster_worker, \
     post_setup_mysql_cluster, setup_gatekeeper, setup_proxy
 
@@ -56,6 +57,13 @@ async def setup():
     await asyncio.gather(*tasks)
 
     post_setup_mysql_cluster(instances[1])
+
+    # Benchmarks
+    tasks = [
+        asyncio.to_thread(run_benchmarks_standalone, instances[0].public_ip_address),
+        asyncio.to_thread(run_benchmarks_cluster, instances[1].public_ip_address)
+    ]
+    await asyncio.gather(*tasks)
 
     return instances
 
