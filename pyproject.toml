@@ -10,6 +10,7 @@ packages = [
     { include = "destroy", from = "." },
     { include = "benchmarks", from = "." },
     { include = "proxy", from = "." },
+    { include = "gatekeeper", from = "." },
 ]
 
 [tool.poetry.dependencies]
