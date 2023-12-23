@@ -17,9 +17,9 @@ def handle(method: str):
 
     match request.method:
         case "GET":
-            res = requests.get(url)
+            res = requests.get(url, data=request.data.decode())
         case "POST":
-            res = requests.post(url)
+            res = requests.post(url, data=request.data.decode())
         case _:
             return "Method not allowed", 405
 
