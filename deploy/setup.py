@@ -31,6 +31,7 @@ async def setup():
         create_instance("mysql-cluster-worker-3", "t2.micro", security_group, key_pair, availability_zone),
         create_instance("proxy", "t2.large", security_group, key_pair, availability_zone),
         create_instance("gatekeeper", "t2.large", security_group, key_pair, availability_zone),
+        create_instance("trusted-host", "t2.large", security_group, key_pair, availability_zone),
     ]
 
     logger.info("Waiting for instances to be running")
@@ -41,12 +42,13 @@ async def setup():
     logger.info("All instances are ready")
     logger.info("Installing MySQL")
 
-    # Setup Single MySQL + Setup Cluster Manager simultaneously
+    # Setup Single MySQL + Setup Cluster Manager + Setup gatekeeper/trusted-host/proxy simultaneously
     tasks = [
         asyncio.to_thread(setup_mysql_single, instances[0]),
         asyncio.to_thread(setup_mysql_cluster_manager, instances[1], instances[2:5]),
         asyncio.to_thread(setup_proxy, instances[5], instances[1], instances[2:5]),
-        asyncio.to_thread(setup_gatekeeper, instances[6], instances[5])
+        asyncio.to_thread(setup_gatekeeper, instances[6], instances[5]),
+        asyncio.to_thread(setup_gatekeeper, instances[7], instances[6])
     ]
     await asyncio.gather(*tasks)
 
