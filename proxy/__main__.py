@@ -47,10 +47,10 @@ def send(host: str, sql: str):
     db = database(host)
     cursor = db.cursor()
     cursor.execute(sql)
-    res = cursor.fetchall()
+    res = cursor.fetchmany()
     db.commit()
     db.close()
-    return res
+    return str(res)
 
 
 def database(host: str) -> MySQLConnection:
