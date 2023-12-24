@@ -30,8 +30,8 @@ async def setup():
         create_instance("mysql-cluster-worker-2", "t2.micro", security_group, key_pair, availability_zone),
         create_instance("mysql-cluster-worker-3", "t2.micro", security_group, key_pair, availability_zone),
         create_instance("proxy", "t2.large", security_group, key_pair, availability_zone),
-        create_instance("gatekeeper", "t2.large", security_group, key_pair, availability_zone),
         create_instance("trusted-host", "t2.large", security_group, key_pair, availability_zone),
+        create_instance("gatekeeper", "t2.large", security_group, key_pair, availability_zone),
     ]
 
     logger.info("Waiting for instances to be running")
