@@ -205,18 +205,18 @@ def setup_proxy(inst: Instance, manager: Instance, workers: list[Instance]):
             rm -rf app && mkdir -p app
             tar xzf proxy.tar.gz -C app/
             cd app
-            sudo docker build -t proxy \
-                 --build-arg MANAGER_HOST={manager.private_ip_address} \
-                 --build-arg SLAVE_1_HOST={workers[0].private_ip_address} \
-                 --build-arg SLAVE_2_HOST={workers[1].private_ip_address} \
-                 --build-arg SLAVE_3_HOST={workers[2].private_ip_address} \
-                 -f proxy/Dockerfile .
-             sudo docker run -d -p 80:8080 proxy
+            sudo docker build -t proxy -f proxy/Dockerfile .
+            sudo docker run -d -p 80:8080 \
+                -e MANAGER_HOST={manager.private_ip_address} \
+                -e SLAVE_1_HOST={workers[0].private_ip_address} \
+                -e SLAVE_2_HOST={workers[1].private_ip_address} \
+                -e SLAVE_3_HOST={workers[2].private_ip_address} \
+                proxy
             """)
 
 
 @backoff.on_exception(backoff.constant, (NoValidConnectionsError, TimeoutError, SSHExecError))
-def setup_gatekeeper(inst: Instance, proxy: Instance):
+def setup_gatekeeper(inst: Instance, forward_inst: Instance):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, inst.public_ip_address)
 
@@ -237,10 +237,8 @@ def setup_gatekeeper(inst: Instance, proxy: Instance):
             rm -rf app && mkdir -p app
             tar xzf gatekeeper.tar.gz -C app/
             cd app
-            sudo docker build -t gatekeeper \
-                --build-arg PROXY_HOST={proxy.private_ip_address} \
-                -f gatekeeper/Dockerfile .
-            sudo docker run -d -p 80:8080 gatekeeper
+            sudo docker build -t gatekeeper -f gatekeeper/Dockerfile .
+            sudo docker run -d -p 80:8080 -e PROXY_HOST={forward_inst.private_ip_address} gatekeeper
             """)
 
 
