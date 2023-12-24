@@ -9,7 +9,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 RUN pip3 install poetry && \
-    poetry install --only gatekeeper --no-root && \
+    poetry install --no-root && \
     rm -rf ~/.cache/
 
 COPY gatekeeper gatekeeper

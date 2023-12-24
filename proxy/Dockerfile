@@ -16,7 +16,7 @@ WORKDIR /app
 
 COPY pyproject.toml poetry.lock ./
 RUN pip3 install poetry && \
-    poetry install --only proxy --no-root && \
+    poetry install --no-root && \
     rm -rf ~/.cache/
 
 COPY proxy proxy
