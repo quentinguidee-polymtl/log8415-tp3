@@ -26,7 +26,7 @@ def setup_mysql_single(inst: Instance):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, inst.public_ip_address)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install deps", ssh_cli, r"""
             sudo apt-get update
             sudo apt-get install -y mysql-server
             sudo apt-get install -y unzip
@@ -34,14 +34,14 @@ def setup_mysql_single(inst: Instance):
 
         wait_mysql(ssh_cli)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("restart mysql", ssh_cli, r"""
             sudo sed -i "s/bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
             sudo systemctl restart mysql.service
             """)
 
         wait_mysql(ssh_cli)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install sakila db single", ssh_cli, r"""
             wget https://downloads.mysql.com/docs/sakila-db.zip
             unzip sakila-db.zip
             sudo mysql -e "CREATE USER 'ubuntu'@'%' IDENTIFIED BY 'ubuntu';"
@@ -57,7 +57,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, manager.public_ip_address)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install deps", ssh_cli, r"""
             sudo add-apt-repository -y universe
             sudo apt update
             sudo apt install -y libaio1 libmecab2 libtinfo5 libncurses5 unzip
@@ -65,7 +65,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
 
         # Install the manager
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("install manager", ssh_cli, rf"""
             mkdir mysql
             cd mysql
             wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster-community-management-server_7.6.6-1ubuntu18.04_amd64.deb
@@ -97,11 +97,11 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
             EOF
             """)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("run ndb_mgmd", ssh_cli, r"""
             sudo ndb_mgmd --reload -f /var/lib/mysql-cluster/config.ini --initial
             """)
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("firewall", ssh_cli, rf"""
             sudo ufw allow from {manager.private_ip_address}
             sudo ufw allow from {workers[0].private_ip_address}
             sudo ufw allow from {workers[1].private_ip_address}
@@ -110,7 +110,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
 
         # Install the server/client
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("install mysql server/client", ssh_cli, rf"""
             mkdir mysql-c
             cd mysql-c
             wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster_7.6.6-1ubuntu18.04_amd64.deb-bundle.tar
@@ -138,13 +138,13 @@ def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: l
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, worker.public_ip_address)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install deps", ssh_cli, r"""
             sudo add-apt-repository -y universe
             sudo apt update
             sudo apt install -y libaio1 libmecab2 libtinfo5 libclass-methodmaker-perl
             """)
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("install cluster datanode", ssh_cli, rf"""
             mkdir mysql
             cd mysql
             wget https://dev.mysql.com/get/Downloads/MySQL-Cluster-7.6/mysql-cluster-community-data-node_7.6.6-1ubuntu18.04_amd64.deb
@@ -156,14 +156,14 @@ def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: l
             sudo mkdir -p /usr/local/mysql/data
             """)
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("firewall", ssh_cli, rf"""
             sudo ufw allow from {manager.private_ip_address}
             sudo ufw allow from {workers[0].private_ip_address}
             sudo ufw allow from {workers[1].private_ip_address}
             sudo ufw allow from {workers[2].private_ip_address}
             """)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("run ndbd", ssh_cli, r"""
             sudo ndbd
             """)
 
@@ -172,7 +172,7 @@ def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: l
 def post_setup_mysql_cluster(manager: Instance):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, manager.public_ip_address)
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install sakila db", ssh_cli, r"""
             wget https://downloads.mysql.com/docs/sakila-db.zip
             unzip sakila-db.zip
             sudo mysql -e "CREATE USER 'ubuntu'@'%' IDENTIFIED BY 'ubuntu';"
@@ -188,7 +188,7 @@ def setup_proxy(inst: Instance, manager: Instance, workers: list[Instance]):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, inst.public_ip_address)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install docker", ssh_cli, r"""
             sudo snap install docker
             """)
 
@@ -201,7 +201,7 @@ def setup_proxy(inst: Instance, manager: Instance, workers: list[Instance]):
                 f.seek(0)
                 sftp.putfo(f, "proxy.tar.gz")
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("start proxy", ssh_cli, rf"""
             rm -rf app && mkdir -p app
             tar xzf proxy.tar.gz -C app/
             cd app
@@ -220,7 +220,7 @@ def setup_gatekeeper(inst: Instance, forward_inst: Instance):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, inst.public_ip_address)
 
-        ssh_exec(ssh_cli, r"""
+        ssh_exec("install docker", ssh_cli, r"""
             sudo snap install docker
             """)
 
@@ -233,7 +233,7 @@ def setup_gatekeeper(inst: Instance, forward_inst: Instance):
                 f.seek(0)
                 sftp.putfo(f, "gatekeeper.tar.gz")
 
-        ssh_exec(ssh_cli, rf"""
+        ssh_exec("start gatekeeper", ssh_cli, rf"""
             rm -rf app && mkdir -p app
             tar xzf gatekeeper.tar.gz -C app/
             cd app
@@ -251,11 +251,13 @@ def ssh_connect(cli: SSHClient, ip: str):
     )
 
 
-def ssh_exec(cli: SSHClient, cmd: str):
+def ssh_exec(name: str, cli: SSHClient, cmd: str):
     cmd = dedent(cmd)
+    logger.info(f"Executing script {name}")
     logger.info(f"SSH >> {cmd}")
     stdin, stdout, stderr = cli.exec_command(cmd, get_pty=True)
     status = stdout.channel.recv_exit_status()
+    logger.info(f"Script {name} finished with status {status}")
     if status != 0:
         logger.error(f"SSH error >> {stdout.read().decode().strip()}")
         err = stderr.read().decode().strip()
@@ -264,7 +266,7 @@ def ssh_exec(cli: SSHClient, cmd: str):
 
 
 def wait_mysql(cli: SSHClient):
-    ssh_exec(cli, r"""
+    ssh_exec("waiting mysql to be ready", cli, r"""
         while ! sudo mysql -e "SHOW DATABASES;"; do
             echo "MySQL is not ready yet. Waiting 1 second..."
             sleep 1

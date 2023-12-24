@@ -12,7 +12,7 @@ def run_benchmarks_standalone(host: str):
     with SSHClient() as ssh:
         ssh_connect(ssh, host)
 
-        ssh_exec(ssh, r"""
+        ssh_exec("run sysbench standalone", ssh, r"""
             sudo apt-get install -y sysbench
             sysbench oltp_read_write --mysql-user=ubuntu --mysql-password=ubuntu --mysql-db=sakila --table-size=20000 --db-driver=mysql prepare
             sysbench oltp_read_write --mysql-user=ubuntu --mysql-password=ubuntu --mysql-db=sakila --table-size=20000 --db-driver=mysql --threads=6 --time=60 --max-requests=0 run > output.txt
@@ -27,7 +27,7 @@ def run_benchmarks_cluster(host: str):
     with SSHClient() as ssh:
         ssh_connect(ssh, host)
 
-        ssh_exec(ssh, r"""
+        ssh_exec("run sysbench cluster", ssh, r"""
             sudo apt-get install -y sysbench
             sysbench oltp_read_write --mysql-user=ubuntu --mysql-password=ubuntu --mysql-db=sakila --table-size=20000 --mysql_storage_engine=ndbcluster --db-driver=mysql prepare
             sysbench oltp_read_write --mysql-user=ubuntu --mysql-password=ubuntu --mysql-db=sakila --table-size=20000 --mysql_storage_engine=ndbcluster --db-driver=mysql --threads=6 --time=60 --max-requests=0 run > output.txt
