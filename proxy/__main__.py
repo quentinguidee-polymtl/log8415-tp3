@@ -15,7 +15,7 @@ SLAVE_HOSTS = [
 ]
 
 
-@app.route("/direct")
+@app.route("/direct", methods=["GET", "POST"])
 def handle_direct():
     """
     Directly send the request to the master node
@@ -23,7 +23,7 @@ def handle_direct():
     return send(MANAGER_HOST, request.data.decode())
 
 
-@app.route("/random")
+@app.route("/random", methods=["GET", "POST"])
 def handle_random():
     """
     Send the request to a random slave node
@@ -31,7 +31,7 @@ def handle_random():
     return send(random.choice(SLAVE_HOSTS), request.data.decode())
 
 
-@app.route("/custom")
+@app.route("/custom", methods=["GET", "POST"])
 def handle_custom():
     """
     Send the request to the slave with the least load
