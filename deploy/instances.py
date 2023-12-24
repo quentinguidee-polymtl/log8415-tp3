@@ -134,7 +134,7 @@ def setup_mysql_cluster_manager(manager: Instance, workers: list[Instance]):
 
 
 @backoff.on_exception(backoff.constant, (NoValidConnectionsError, TimeoutError))
-def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: list['Instance']):
+def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: list['Instance'], proxy: Instance):
     with SSHClient() as ssh_cli:
         ssh_connect(ssh_cli, worker.public_ip_address)
 
@@ -161,6 +161,7 @@ def setup_mysql_cluster_worker(manager: Instance, worker: 'Instance', workers: l
             sudo ufw allow from {workers[0].private_ip_address}
             sudo ufw allow from {workers[1].private_ip_address}
             sudo ufw allow from {workers[2].private_ip_address}
+            sudo ufw allow from {proxy.private_ip_address}
             """)
 
         ssh_exec("run ndbd", ssh_cli, r"""
