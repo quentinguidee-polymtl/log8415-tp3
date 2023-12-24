@@ -63,6 +63,7 @@ def database(host: str) -> MySQLConnection:
         host=host,
         user="ubuntu",
         password="ubuntu",
+        database="sakila"
     )
 
 
