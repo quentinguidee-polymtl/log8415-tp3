@@ -46,6 +46,7 @@ def send(host: str, sql: str):
     """
     db = database(host)
     cursor = db.cursor()
+    app.logger.info(f"Sending SQL command '{sql}' to host '{host}'")
     cursor.execute(sql)
     res = cursor.fetchmany()
     db.commit()
