@@ -1,3 +1,4 @@
+import logging
 import os
 
 import requests
@@ -29,4 +30,5 @@ def handle(method: str):
 
 
 if __name__ == "__main__":
+    app.logger.setLevel(logging.DEBUG)
     app.run(host="0.0.0.0", port=8080)
