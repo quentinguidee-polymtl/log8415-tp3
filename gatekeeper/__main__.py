@@ -13,6 +13,8 @@ def handle(method: str):
     """
     Handle /direct, /random, and /custom requests
     """
+    app.logger.info(f"Forwarding request to host '{PROXY_HOST}'")
+
     url = f"http://{PROXY_HOST}/{method}"
 
     match request.method:
