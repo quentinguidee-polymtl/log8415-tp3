@@ -44,11 +44,12 @@ def send(host: str, sql: str):
     """
     Send the request to the given host and return the response
     """
+    app.logger.info(f"Sending SQL command '{sql}' to host '{host}'")
+
     db = database(host)
     cursor = db.cursor()
-    app.logger.info(f"Sending SQL command '{sql}' to host '{host}'")
     cursor.execute(sql)
-    res = cursor.fetchmany()
+    res = cursor.fetchall()
     db.commit()
     db.close()
     return str(res)
