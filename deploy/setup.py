@@ -54,7 +54,8 @@ async def setup():
 
     # Setup Cluster Workers
     tasks = [
-        asyncio.to_thread(setup_mysql_cluster_worker, instances[1], inst, instances[2:5]) for inst in instances[2:5]
+        asyncio.to_thread(setup_mysql_cluster_worker, instances[1], inst, instances[2:5], instances[5]) for inst in
+        instances[2:5]
     ]
     await asyncio.gather(*tasks)
 
