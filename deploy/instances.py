@@ -1,9 +1,9 @@
 import io
 import logging
 import tarfile
-from textwrap import dedent
-
 import backoff
+
+from textwrap import dedent
 from mypy_boto3_ec2.service_resource import Instance
 from paramiko.client import SSHClient, AutoAddPolicy
 from paramiko.rsakey import RSAKey
