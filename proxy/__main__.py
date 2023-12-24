@@ -1,9 +1,10 @@
+import logging
 import os
 import random
 
 from flask import Flask, request
 from ping3 import ping
-from mysql.connector import connect, MySQLConnection
+from mysql.connector import connect
 
 app = Flask(__name__)
 
@@ -46,26 +47,20 @@ def send(host: str, sql: str):
     """
     app.logger.info(f"Sending SQL command '{sql}' to host '{host}'")
 
-    db = database(host)
-    cursor = db.cursor()
-    cursor.execute(sql)
-    res = cursor.fetchall()
-    db.commit()
-    db.close()
-    return str(res)
-
-
-def database(host: str) -> MySQLConnection:
-    """
-    Connect to the database on the given host
-    """
-    return connect(
+    db = connect(
         host=host,
         user="ubuntu",
         password="ubuntu",
         database="sakila"
     )
+    with db.cursor() as cursor:
+        cursor.execute(sql)
+        res = cursor.fetchall()
+
+    db.close()
+    return str(res)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.logger.setLevel(logging.DEBUG)
+    app.run(host="0.0.0.0", port=8080, debug=True)
